@@ -12,8 +12,10 @@ public class Tunnel extends Stage {
     public void go(Car c) {
         try {
             try {
-                System.out.println(c.getName() + " готовится к этапу(ждет): " + description);
-                smp.acquire(); //кол-во допустимых потоков уменьшилось на один
+                if (!smp.tryAcquire()) { //если не удалось занять семафор
+                    System.out.println(c.getName() + " готовится к этапу(ждет): " + description);
+                    smp.acquire(); //ждать, когда освободится место в семафоре
+                }
 
                 System.out.println(c.getName() + " начал этап: " + description);
                 Thread.sleep(length / c.getSpeed() * 1000);
@@ -21,7 +23,7 @@ public class Tunnel extends Stage {
                 e.printStackTrace();
             } finally {
                 System.out.println(c.getName() + " закончил этап: " + description);
-                smp.release(); //кол-во допустимых потоков увеличилось на один
+                smp.release(); //освободить место в семафоре
             }
         } catch (Exception e) {
             e.printStackTrace();
